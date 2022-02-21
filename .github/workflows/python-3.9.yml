@@ -1,0 +1,38 @@
+name: publish-python-3.9
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - python/3.9/tag.json
+jobs:
+  build:
+    env:
+      context: python/3.9
+      recipe_name: Dockerfile.python-3.9
+      image_name: python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Get image tags
+        id: image_tags
+        run: |
+          echo -n ::set-output name=IMAGE_TAGS::
+          TAGS=$(jq -r '.version' ${context}/tag.json)
+          TAGS+=('latest')
+          ( IFS=$','; echo "${TAGS[*]}" )
+      - name: Build and publish image to Quay
+        uses: docker/build-push-action@v1
+        with:
+          path: ${{ env.context }}
+          dockerfile: ${{ env.context }}/${{ env.recipe_name }}
+          registry: ${{ secrets.REGISTRY_SERVER }}
+          repository: ${{ secrets.REGISTRY_NAMESPACE }}/${{ env.image_name }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+          tags: "${{ steps.image_tags.outputs.IMAGE_TAGS }}"
+      - name: Test image
+        run: |
+          TAG=$(jq -r '.version' ${context}/tag.json)
+          echo "Running: docker run ${image_name}:${TAG}"
+          docker run ${image_name}:${TAG}
