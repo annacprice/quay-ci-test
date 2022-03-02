@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - trimgalore/0.6.7/tag.json
+      - trimgalore/0.6.7/Dockerfile.trimgalore-0.6.7
 jobs:
   build:
     env:
