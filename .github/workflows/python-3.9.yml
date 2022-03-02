@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - python/3.9/tag.json
+      - python/3.9/Dockerfile.python-3.9
 jobs:
   build:
     env:
@@ -35,4 +36,4 @@ jobs:
         run: |
           TAG=$(jq -r '.version' ${context}/tag.json)
           echo "Running: docker run ${image_name}:${TAG}"
-          docker run ${image_name}:${TAG}
+          docker run ${{ secrets.REGISTRY_SERVER }}/${{ secrets.REGISTRY_NAMESPACE }}/${image_name}:${TAG}
